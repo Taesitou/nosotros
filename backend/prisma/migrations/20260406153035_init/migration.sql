@@ -1,0 +1,18 @@
+-- CreateTable
+CREATE TABLE "Album" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "title" TEXT NOT NULL,
+    "date" DATETIME NOT NULL,
+    "description" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
+CREATE TABLE "Media" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "albumId" INTEGER NOT NULL,
+    "filename" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Media_albumId_fkey" FOREIGN KEY ("albumId") REFERENCES "Album" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);

@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - '127.0.0.1:3001:3001'
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/prisma:/app/prisma
+
+  frontend:
+    build: ./frontend
+    ports:
+      - '127.0.0.1:80:80'

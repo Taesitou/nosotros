@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-warm-cream text-dark-charcoal font-sans antialiased selection:bg-dusty-rose selection:text-white transition-colors duration-300;
+  }
+}
+
+/* Custom Scrollbar for a more elegant look */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-warm-cream;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-dusty-rose/50 rounded-full hover:bg-dusty-rose/80 transition-colors;
+}
