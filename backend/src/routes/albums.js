@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const multer = require('multer')
 const path = require('path')
+const fs = require('fs')
 const { PrismaClient } = require('@prisma/client')
 const auth = require('../middleware/auth')
 
@@ -77,6 +78,26 @@ router.put('/:id', async (req, res) => {
     res.json(album)
   } catch (error) {
     res.status(500).json({ message: 'Error al actualizar el álbum' })
+  }
+})
+
+router.delete('/:id/media/:mediaId', async (req, res) => {
+  try {
+    const deletedMedia = await prisma.media.delete({
+      where: { id: parseInt(req.params.mediaId) }
+    })
+    
+    // Attempt to remove file from disk
+    if (deletedMedia && deletedMedia.filename) {
+      const filePath = path.join(__dirname, '../../uploads', deletedMedia.filename)
+      fs.unlink(filePath, (err) => {
+        if (err) console.error('Failed to clear file from disk:', err)
+      })
+    }
+
+    res.json({ ok: true, deletedMedia })
+  } catch (error) {
+    res.status(500).json({ message: 'Error al eliminar el archivo multimedia' })
   }
 })
 

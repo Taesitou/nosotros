@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getAlbum, uploadMedia, deleteAlbum, getMediaUrl, updateAlbum } from '../api';
+import { getAlbum, uploadMedia, deleteAlbum, getMediaUrl, updateAlbum, deleteMedia } from '../api';
 import { ChevronLeft, Trash2, Plus, Loader2, PlayCircle, Image as ImageIcon, Calendar, X, Edit2, Check } from 'lucide-react';
 
 export default function AlbumDetail() {
@@ -83,6 +83,22 @@ export default function AlbumDetail() {
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDeleteMedia = async (mediaId, e) => {
+    e.stopPropagation();
+    if (window.confirm('¿Estás seguro/a que querés borrar esto para siempre?')) {
+      try {
+        await deleteMedia(id, mediaId);
+        setAlbum((prevAlbum) => ({
+          ...prevAlbum,
+          media: prevAlbum.media.filter((media) => media.id !== mediaId)
+        }));
+      } catch (err) {
+        console.error('Error al borrar el archivo:', err);
+        alert('Hubo un error al borrar. Intentá de nuevo.');
+      }
     }
   };
 
@@ -237,6 +253,15 @@ export default function AlbumDetail() {
                 className="break-inside-avoid relative group rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-xl hover:shadow-dusty-rose/10 transition-all duration-500 transform hover:-translate-y-1 mb-6 border border-gray-100 cursor-pointer"
                 onClick={() => setSelectedMedia(mediaItem)}
               >
+                {/* Delete button (X) */}
+                <button
+                  onClick={(e) => handleDeleteMedia(mediaItem.id, e)}
+                  title="Borrar"
+                  className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center bg-black/40 hover:bg-red-500/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200"
+                >
+                  <X size={16} strokeWidth={3} />
+                </button>
+
                 {isVideo(mediaItem.filename) ? (
                   <div className="relative">
                      <video 

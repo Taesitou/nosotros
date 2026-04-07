@@ -32,6 +32,7 @@ export const uploadMedia = (id, formData) => api.post(`/albums/${id}/media`, for
   headers: { 'Content-Type': 'multipart/form-data' }
 });
 export const deleteAlbum = (id) => api.delete(`/albums/${id}`);
+export const deleteMedia = (albumId, mediaId) => api.delete(`/albums/${albumId}/media/${mediaId}`);
 export const getMediaUrl = (filename) => `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/uploads/${filename}`;
 
 export default api;
