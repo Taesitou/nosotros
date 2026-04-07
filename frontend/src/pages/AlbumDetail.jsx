@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getAlbum, uploadMedia, deleteAlbum, getMediaUrl } from '../api';
-import { ChevronLeft, Trash2, Plus, Loader2, PlayCircle, Image as ImageIcon, Calendar, X } from 'lucide-react';
+import { getAlbum, uploadMedia, deleteAlbum, getMediaUrl, updateAlbum } from '../api';
+import { ChevronLeft, Trash2, Plus, Loader2, PlayCircle, Image as ImageIcon, Calendar, X, Edit2, Check } from 'lucide-react';
 
 export default function AlbumDetail() {
   const { id } = useParams();
@@ -13,6 +13,9 @@ export default function AlbumDetail() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState(null);
   const [selectedMedia, setSelectedMedia] = useState(null);
+
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
   
   const fileInputRef = useRef(null);
 
@@ -21,6 +24,7 @@ export default function AlbumDetail() {
       setLoading(true);
       const res = await getAlbum(id);
       setAlbum(res.data);
+      setEditTitle(res.data.title);
     } catch (err) {
       console.error(err);
       setError('No se pudo encontrar este álbum.');
@@ -45,6 +49,18 @@ export default function AlbumDetail() {
         alert('Error al borrar el álbum.');
         setDeleting(false);
       }
+    }
+  };
+
+  const handleUpdateTitle = async () => {
+    if (!editTitle.trim()) return;
+    try {
+      await updateAlbum(id, { title: editTitle });
+      setAlbum({ ...album, title: editTitle });
+      setIsEditingTitle(false);
+    } catch(err) {
+      console.error(err);
+      alert('Error al guardar el nuevo título.');
     }
   };
 
@@ -111,20 +127,56 @@ export default function AlbumDetail() {
               <span className="font-medium text-sm hidden sm:inline">Volver al Timeline</span>
             </Link>
 
-            <button 
-              onClick={handleDelete}
-              disabled={deleting}
-              className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-xl transition-colors disabled:opacity-50"
-              title="Borrar álbum"
-            >
-              {deleting ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setIsEditingTitle(true)}
+                className="text-gray-400 hover:text-dusty-rose hover:bg-dusty-rose/10 p-2 rounded-xl transition-colors"
+                title="Editar título"
+              >
+                <Edit2 size={20} />
+              </button>
+              <button 
+                onClick={handleDelete}
+                disabled={deleting}
+                className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-xl transition-colors disabled:opacity-50"
+                title="Borrar álbum"
+              >
+                {deleting ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
+              </button>
+            </div>
           </div>
 
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-playfair font-bold text-dark-charcoal mb-4">
-              {album.title}
-            </h1>
+            {isEditingTitle ? (
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <input 
+                  type="text" 
+                  value={editTitle} 
+                  autoFocus
+                  onChange={(e) => setEditTitle(e.target.value)} 
+                  onKeyDown={(e) => e.key === 'Enter' && handleUpdateTitle()}
+                  className="text-4xl md:text-5xl font-playfair font-bold text-dark-charcoal bg-transparent border-b-2 border-dusty-rose/50 outline-none text-center px-2 py-1 max-w-lg w-full"
+                />
+                <button 
+                  onClick={handleUpdateTitle}
+                  className="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors"
+                  title="Guardar título"
+                >
+                  <Check size={28} />
+                </button>
+                <button 
+                  onClick={() => { setIsEditingTitle(false); setEditTitle(album.title); }}
+                  className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors"
+                  title="Cancelar"
+                >
+                  <X size={28} />
+                </button>
+              </div>
+            ) : (
+              <h1 className="text-4xl md:text-6xl font-playfair font-bold text-dark-charcoal mb-4">
+                {album.title}
+              </h1>
+            )}
             
             <div className="flex items-center justify-center gap-2 text-dusty-rose font-medium tracking-wide uppercase text-sm mb-6">
               <Calendar size={16} />

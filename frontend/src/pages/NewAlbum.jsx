@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ChevronLeft, UploadCloud, X, HelpCircle, AlertCircle } from 'lucide-react';
 import { createAlbum, uploadMedia } from '../api';
+import heic2any from 'heic2any';
 
 export default function NewAlbum() {
   const navigate = useNavigate();
@@ -14,9 +15,38 @@ export default function NewAlbum() {
   
   const fileInputRef = useRef(null);
 
-  const handleFileChange = (e) => {
+  const processFiles = async (newFiles) => {
+    setLoading(true);
+    const processedFiles = [];
+    for (let file of newFiles) {
+      if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+        try {
+          const convertedBlob = await heic2any({
+            blob: file,
+            toType: 'image/jpeg',
+            quality: 0.8
+          });
+          const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+          const convertedFile = new File([blob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), {
+            type: 'image/jpeg'
+          });
+          processedFiles.push(convertedFile);
+        } catch (err) {
+          console.error("Error convirtiendo HEIC:", err);
+          setError("No se pudo procesar una imagen HEIC.");
+          processedFiles.push(file);
+        }
+      } else {
+        processedFiles.push(file);
+      }
+    }
+    setFiles((prev) => [...prev, ...processedFiles]);
+    setLoading(false);
+  };
+
+  const handleFileChange = async (e) => {
     const newFiles = Array.from(e.target.files);
-    setFiles((prev) => [...prev, ...newFiles]);
+    await processFiles(newFiles);
   };
 
   const removeFile = (index) => {
@@ -57,12 +87,12 @@ export default function NewAlbum() {
     e.stopPropagation();
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const newFiles = Array.from(e.dataTransfer.files);
-      setFiles((prev) => [...prev, ...newFiles]);
+      await processFiles(newFiles);
     }
   };
 
@@ -139,7 +169,7 @@ export default function NewAlbum() {
               <label className="block text-sm font-medium text-gray-700 tracking-wide uppercase">
                 Fotos y Videos
               </label>
-              <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-md border flex items-center gap-1.5 cursor-help" title="Formatos: JPG, PNG, WEBP, MP4, MOV">
+              <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-md border flex items-center gap-1.5 cursor-help" title="Formatos: JPG, PNG, WEBP, HEIC, MP4, MOV">
                 <HelpCircle size={14}/> Formatos
               </span>
             </div>
@@ -158,7 +188,7 @@ export default function NewAlbum() {
                 ref={fileInputRef}
                 className="hidden"
                 onChange={handleFileChange}
-                accept="image/*,video/*"
+                accept="image/*,video/*,.heic,.heif"
               />
               <div className="w-16 h-16 mb-4 bg-white shadow-sm shadow-dusty-rose/10 rounded-full flex items-center justify-center pointer-events-none">
                 <UploadCloud className="w-8 h-8 text-dusty-rose" />

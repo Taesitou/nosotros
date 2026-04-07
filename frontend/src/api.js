@@ -27,6 +27,7 @@ export const login = (credentials) => api.post('/auth/login', credentials);
 export const getAlbums = () => api.get('/albums');
 export const getAlbum = (id) => api.get(`/albums/${id}`);
 export const createAlbum = (data) => api.post('/albums', data);
+export const updateAlbum = (id, data) => api.put(`/albums/${id}`, data);
 export const uploadMedia = (id, formData) => api.post(`/albums/${id}/media`, formData, {
   headers: { 'Content-Type': 'multipart/form-data' }
 });

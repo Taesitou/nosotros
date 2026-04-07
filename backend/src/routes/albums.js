@@ -67,4 +67,17 @@ router.delete('/:id', async (req, res) => {
   res.json({ ok: true })
 })
 
+router.put('/:id', async (req, res) => {
+  try {
+    const { title } = req.body
+    const album = await prisma.album.update({
+      where: { id: parseInt(req.params.id) },
+      data: { title }
+    })
+    res.json(album)
+  } catch (error) {
+    res.status(500).json({ message: 'Error al actualizar el álbum' })
+  }
+})
+
 module.exports = router
